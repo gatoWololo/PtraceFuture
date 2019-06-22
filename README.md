@@ -1,6 +1,9 @@
-# Rust Ptrace Future Attempt
 
-This is my attempt at implementing a Rust future for ptrace events. Still WIP.
+# Rust Futures From Scratch
 
-We do not use tokio, or mio. Instead implement our own executor and reactor which
+This is my attempt at implementing a Rust future "from scratch" for process events.
+
+We do not use Tokio, or Mio. Instead implement our own executor and reactor which
 communicate with futures through thread local state.
+
+This is an example implementation for (TODO this blog).

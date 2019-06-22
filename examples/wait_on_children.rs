@@ -1,22 +1,17 @@
 #![feature(async_await)]
-
 use futures::future::Future;
 use nix::sys::wait::{WaitStatus};
 use nix::unistd::{fork, ForkResult, Pid};
 
-mod executor;
-mod ptrace_event;
-
-use crate::executor::WaitidExecutor;
-use crate::ptrace_event::PtraceEvent;
-
+use wait_status_future::WaitStatusEvent;
+use wait_status_future::Executor;
 
 fn main() -> nix::Result<()> {
     match fork()? {
         ForkResult::Parent { child: child1 } => {
             match fork()? {
                 ForkResult::Parent { child: child2 } => {
-                    let mut pool = WaitidExecutor::new();
+                    let mut pool = Executor::new();
 
                     pool.add_future(wait_for_child(child1));
                     pool.add_future(wait_for_child(child2));
@@ -37,7 +32,7 @@ fn main() -> nix::Result<()> {
 }
 
 fn wait_for_child(pid: Pid) -> impl Future<Output=WaitStatus> {
-    let child = PtraceEvent { pid };
+    let child = WaitStatusEvent { pid };
 
     async {
         let res: WaitStatus = child.await;
