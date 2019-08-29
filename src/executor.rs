@@ -1,7 +1,7 @@
 use futures::future::Future;
 use futures::future::BoxFuture;
 use futures::task::{Context, Poll, ArcWake};
-
+use futures::task::waker;
 use std::sync::Arc;
 use nix::sys::wait::{WaitStatus};
 
@@ -79,7 +79,7 @@ impl<'a> Executor<'a> {
 
         // Create waker.
         let task_id = self.get_next_task_id();
-        let waker = Arc::new(WaitidWaker { task_id }).into_waker();
+        let waker = waker(Arc::new(WaitidWaker { task_id }));
 
         // Pin it, and box it up for storing.
         let mut added_future: BoxFuture<'a, WaitStatus> =
@@ -107,7 +107,7 @@ impl<'a> Executor<'a> {
         loop {
             reactor::wait_for_event();
             let task_id = NEXT_TASKID.with(|id| *id.borrow());
-            let waker = Arc::new(WaitidWaker { task_id }).into_waker();
+            let waker = waker(Arc::new(WaitidWaker { task_id }));
 
             match self.waiting_tasks.entry(task_id) {
                 Entry::Occupied(mut task) => {
@@ -130,4 +130,3 @@ impl<'a> Executor<'a> {
         }
     }
 }
-
